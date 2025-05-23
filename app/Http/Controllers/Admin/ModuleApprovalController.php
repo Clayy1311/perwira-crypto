@@ -18,20 +18,13 @@ class ModuleApprovalController extends Controller
 
     public function approve(UserModule $module)
     {
-        // 1. Update status
         $module->update([
+            'status' => 'active',
             'status_approved' => 'approved',
-            'admin_notes' => 'Disetujui pada ' . now()->format('d M Y')
+            'admin_notes' => 'Disetujui pada '.now()->format('d M Y')
         ]);
 
-        // 2. Kirim notifikasi ke user
-        $module->user->notify(new PaymentApprovedNotification($module));
-
-        // 3. Redirect dengan pesan sukses
-        return back()->with([
-            'success' => 'Modul disetujui',
-            'notification_sent' => true // Flag tambahan
-        ]);
+        return back()->with('success', 'Modul berhasil disetujui');
     }
 
     public function reject(Request $request, UserModule $module)
