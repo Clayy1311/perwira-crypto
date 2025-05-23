@@ -22,18 +22,24 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request)
-{
-    $request->authenticate();
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        $request->authenticate(); // Otentikasi pengguna
+        $request->session()->regenerate(); // Regenerasi session untuk keamanan
 
-    $request->session()->regenerate();
+        $user = Auth::user(); // Dapatkan objek pengguna yang baru saja login
 
-    if (auth()->user()->isAdmin()) {
-        return redirect()->route('admin.dashboard');
+        // --- INI ADALAH LOGIKA PENTINGNYA ---
+        // PRIORITAS 1: Cek apakah pengguna adalah admin. Ini HARUS DULUAN.
+        if ($user && $user->isAdmin()) {
+            return redirect()->route('admin.dashboard'); // Jika admin, LANGSUNG arahkan ke admin.dashboard
+        }
+
+        // PRIORITAS 2: Jika BUKAN admin, maka arahkan ke dashboard pengguna biasa.
+        // DashboardController (yang sudah kita perbaiki) akan menangani logika lebih lanjut
+        // (apakah user approved, pending, atau perlu memilih modul).
+        return redirect()->intended(route('dashboard'));
     }
-
-    return redirect()->intended(RouteServiceProvider::HOME);
-}
 
     /**
      * Destroy an authenticated session.

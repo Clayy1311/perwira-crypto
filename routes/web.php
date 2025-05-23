@@ -15,11 +15,33 @@ Route::get('/', function () {
 // Rute untuk autentikasi (login/register) - tetap pertahankan
 require __DIR__.'/auth.php';
 
+
+
+// routes pengecekan udah approve atau belum
+Route::middleware(['auth'])->get('/member_area_approved', function() {
+    // Cek apakah user punya minimal 1 modul approved
+    $hasApprovedModule = auth()->user()
+        ->modules()
+        ->where('status_approved', 'approved')
+        ->exists();
+
+    if (!$hasApprovedModule) {
+        return redirect('/')->with('error', 'Anda belum memiliki modul yang disetujui');
+    }
+
+    return view('user.approved_modul');
+})->name('member_area_approved');
+
+
+
+
 // User routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/payment/status', [User\PaymentStatusController::class, 'status'])
          ->name('payment.status');
 });
+
+
 
 // Admin routes
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () { // Pastikan middleware 'is_admin' sudah didaftarkan
@@ -35,6 +57,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () { // Pa
     Route::delete('/module-approvals/{module}', [ModuleApprovalController::class, 'reject'])
          ->name('admin.module-approvals.destroy');
 });
+
+
+
 
 // Rute setelah login (User umum)
 Route::middleware(['auth', 'verified'])->group(function () {
