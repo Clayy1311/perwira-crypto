@@ -21,7 +21,7 @@ class UserModule extends Model
     ];
 
     protected $casts = [
-        'expiry_date' => 'datetime:Y-m-d',
+        'expiry_date' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'status' => 'string',          // tambahkan ini

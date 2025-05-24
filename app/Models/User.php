@@ -1,12 +1,13 @@
 <?php
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail; // <-- Tambahkan ini
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Carbon\Carbon; // <--- PENTING: Tambahkan ini untuk menggunakan Carbon
 
-class User extends Authenticatable implements MustVerifyEmail // <-- Implement interface
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -15,7 +16,7 @@ class User extends Authenticatable implements MustVerifyEmail // <-- Implement i
         'email',
         'password',
         'role',
-        'is_approved' // <-- Tambahkan jika menggunakan approval manual
+        'is_approved'
     ];
 
     protected $hidden = [
@@ -28,35 +29,42 @@ class User extends Authenticatable implements MustVerifyEmail // <-- Implement i
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_approved' => 'boolean', // <-- Tambahkan casting
+            'is_approved' => 'boolean',
         ];
     }
+
     protected static function booted()
     {
         static::deleting(function ($user) {
             // Hapus semua user_modules yang terkait dengan user ini
             $user->modules()->delete();
-            // Anda bisa juga menghapus relasi lain jika ada, misal:
-            // $user->posts()->delete();
-            // $user->payments()->delete();
         });
     }
-    
-    public function hasPendingModule(): bool
-    {
-        // Asumsi 'status_approved' di tabel user_modules bisa bernilai 'pending'
-        return $this->modules()->where('status_approved', 'pending')->exists();
-    }
+
     // Relasi ke modul user
     public function modules()
     {
         return $this->hasMany(UserModule::class);
     }
 
-    // Cek modul aktif
-    public function hasActiveModule()
+    // Cek apakah user punya modul dengan status 'pending'
+    public function hasPendingModule(): bool
     {
-        return $this->modules()->where('status_approved', 'approved')->exists();
+        return $this->modules()->where('status_approved', 'pending')->exists();
+    }
+
+    // Cek apakah user punya modul yang BENAR-BENAR AKTIF (approved DAN belum kedaluwarsa)
+    public function hasActiveModule(): bool
+    {
+        return $this->modules()
+                    ->where('status_approved', 'approved')
+                    ->where(function($query) {
+                        // Kondisi untuk modul Lifetime: expiry_date adalah NULL
+                        $query->whereNull('expiry_date') // <-- Ubah di sini
+                              // ATAU Kondisi untuk modul 1 Tahun (yearly): expiry_date di masa depan
+                              ->orWhere('expiry_date', '>', Carbon::now()); // <-- Ubah di sini
+                    })
+                    ->exists();
     }
 
     // Cek role admin
@@ -65,23 +73,27 @@ class User extends Authenticatable implements MustVerifyEmail // <-- Implement i
         return $this->role === 'admin';
     }
 
-    // ===== Tambahan Baru =====
-    
-    // Cek apakah user sudah verified email
+    // Cek apakah user sudah memverifikasi email
     public function hasVerifiedEmail()
     {
         return !is_null($this->email_verified_at);
     }
 
-    // Untuk notifikasi
+    // Untuk notifikasi email
     public function routeNotificationForMail()
     {
         return $this->email;
     }
 
-    // Cek apakah punya modul approved (alternatif)
+    // Ini adalah metode tambahan yang fungsinya mirip dengan hasActiveModule,
+    // tapi mungkin digunakan untuk query saja.
     public function approvedModules()
     {
-        return $this->modules()->where('status_approved', 'approved');
+        return $this->modules()
+                    ->where('status_approved', 'approved')
+                    ->where(function($query) {
+                        $query->whereNull('expiry_date') // <-- Ubah di sini
+                              ->orWhere('expiry_date', '>', Carbon::now()); // <-- Ubah di sini
+                    });
     }
 }

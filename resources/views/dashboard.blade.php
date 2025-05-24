@@ -13,7 +13,7 @@
                         {{-- Konten untuk user DENGAN MODUL AKTIF (APPROVED) --}}
                         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
                             <strong class="font-bold">Selamat!</strong>
-                            <span class="block sm:inline">Modul Anda ({{ $activeModule->module_type === 'lifetime' ? 'Lifetime' : '1 Bulan' }}) telah aktif dan siap digunakan.</span>
+                            <span class="block sm:inline">Modul Anda ({{ $activeModule->module_type === 'lifetime' ? 'Lifetime' : '1 Tahun' }}) telah aktif dan siap digunakan.</span> {{-- <--- PERUBAHAN DI SINI --}}
                         </div>
                         <h3 class="text-xl font-semibold mb-4">Detail Modul Anda:</h3>
                         <p>Nama Modul: {{ $activeModule->module ? $activeModule->module->name : 'N/A' }}</p>
@@ -25,13 +25,13 @@
                         <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-6" role="alert">
                             <strong class="font-bold">Perhatian!</strong>
                             <span class="block sm:inline">Modul Anda telah berhasil dipilih dan **sedang menunggu persetujuan dari admin**.</span>
-                            <p class="mt-2 text-sm">Anda telah memilih modul: <span class="font-bold">{{ $pendingModule->module ? $pendingModule->module->name : 'N/A' }} ({{ $pendingModule->module_type === 'lifetime' ? 'Lifetime' : 'Bulanan' }})</span>.</p>
+                            <p class="mt-2 text-sm">Anda telah memilih modul: <span class="font-bold">{{ $pendingModule->module ? $pendingModule->module->name : 'N/A' }} ({{ $pendingModule->module_type === 'lifetime' ? 'Lifetime' : '1 Tahun' }})</span>.</p> {{-- <--- PERUBAHAN DI SINI --}}
                             <p class="mt-2 text-sm">Mohon tunggu kabar dari kami. Anda akan menerima notifikasi setelah modul Anda disetujui.</p>
                         </div>
                         <h4 class="text-xl font-semibold mb-4">Detail Modul Menunggu Persetujuan:</h4>
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
                             <p class="mb-1">Nama Modul: <span class="font-medium">{{ $pendingModule->module ? $pendingModule->module->name : 'N/A' }}</span></p>
-                            <p class="mb-1">Jenis Durasi: <span class="font-medium">{{ $pendingModule->module_type === 'lifetime' ? 'Lifetime' : '1 Bulan' }}</span></p>
+                            <p class="mb-1">Jenis Durasi: <span class="font-medium">{{ $pendingModule->module_type === 'lifetime' ? 'Lifetime' : '1 Tahun' }}</span></p> {{-- <--- PERUBAHAN DI SINI --}}
                             <p class="mb-1">Tanggal Dipilih: <span class="font-medium">{{ $pendingModule->created_at->format('d M Y H:i') }}</span></p>
                             <p class="mb-0">Status Persetujuan: <span class="font-bold text-yellow-600">Menunggu Persetujuan</span></p>
                         </div>
